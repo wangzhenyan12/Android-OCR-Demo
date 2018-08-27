@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">OCR</string>
+
+    <string name="camera_permission_not_granted">Please get camera permission firstly</string>
+    <string name="camera_permission_confirmation">Please confirm camera permission</string>
+    <string name="error_camera_permission">fail to request camera permission</string>
 </resources>
