@@ -1,12 +1,14 @@
 package com.jason.ocr;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -129,23 +131,50 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG,"imageWidth:"+width);
                 Log.i(TAG,"imageHeight:"+height);
 
-                startOCR(resultUri);
+                new DoOcrTask().execute(resultUri);
             }
         }
     }
 
-    private void startOCR(Uri imgUri) {
+    private class DoOcrTask extends AsyncTask<Uri, Void, String> {
+
+        private ProgressDialog progressDlg = null;
+
+        @Override
+        protected void onPreExecute() {
+            progressDlg = progressDlg.show(MainActivity.this, null, "OCR Identifying ...");
+        }
+
+        @Override
+        protected String doInBackground(Uri... uris) {
+            return startOCR(uris[0]);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (progressDlg != null) {
+                progressDlg.cancel();
+            }
+            resultView.setText(result);
+        }
+    }
+
+    private String startOCR(Uri imgUri) {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             // 1 - means max size. 4 - means maxsize/4 size.
             // Don't use value <4, because you need more memory in the heap to store your data.
             options.inSampleSize = 4;
             Bitmap bitmap = BitmapFactory.decodeFile(imgUri.getPath(), options);
-
             String result = extractText(bitmap);
-            resultView.setText(result);
+            return result;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+            return null;
         }
     }
 
